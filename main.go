@@ -22,15 +22,22 @@ func main() {
 	db := ConnectDB()
 	defer db.Close()
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+
 	r.GET("/splints", func(c *gin.Context) {
 		splints := []Splint{}
 		db.Find(&splints)
 		c.JSON(http.StatusOK, splints)
+	})
+	r.GET("/splint/:id", func(c *gin.Context) {
+		splint := Splint{}
+		id := c.Param("id")
+		db.Where("ID = ?", id).Find(&splint)
+		c.JSON(http.StatusOK, splint)
+	})
+	r.DELETE("/splint/:id", func(c *gin.Context) {
+		splint := Splint{}
+		id := c.Param("id")
+		db.Where("ID = ?", id).Delete(&splint)
 	})
 	r.Run()
 }
