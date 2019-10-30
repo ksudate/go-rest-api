@@ -22,7 +22,7 @@ func main() {
 	db := ConnectDB()
 	defer db.Close()
 	router := gin.Default()
-
+	// Create
 	router.POST("/splint", func(c *gin.Context) {
 		splint := Splint{}
 		err := c.BindJSON(&splint)
@@ -35,7 +35,7 @@ func main() {
 			c.JSON(http.StatusOK, splint)
 		}
 	})
-
+	// Read
 	router.GET("/splints", func(c *gin.Context) {
 		splints := []Splint{}
 		db.Find(&splints)
@@ -47,6 +47,18 @@ func main() {
 		db.Where("ID = ?", id).Find(&splint)
 		c.JSON(http.StatusOK, splint)
 	})
+	// Update
+	router.POST("/splint/:id", func(c *gin.Context) {
+		splint := Splint{}
+		id := c.Param("id")
+		data := Splint{}
+		err := c.BindJSON(&data)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Request is failed: "+err.Error())
+		}
+		db.Where("ID = ?", id).First(&splint).Update(&data)
+	})
+	// Delete
 	router.DELETE("/splint/:id", func(c *gin.Context) {
 		splint := Splint{}
 		id := c.Param("id")
