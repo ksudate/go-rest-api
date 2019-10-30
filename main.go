@@ -21,23 +21,36 @@ type Splint struct {
 func main() {
 	db := ConnectDB()
 	defer db.Close()
-	r := gin.Default()
+	router := gin.Default()
 
-	r.GET("/splints", func(c *gin.Context) {
+	router.POST("/splint", func(c *gin.Context) {
+		splint := Splint{}
+		err := c.BindJSON(&splint)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Request is failed: "+err.Error())
+		}
+		db.NewRecord(splint)
+		db.Create(&splint)
+		if db.NewRecord(splint) == false {
+			c.JSON(http.StatusOK, splint)
+		}
+	})
+
+	router.GET("/splints", func(c *gin.Context) {
 		splints := []Splint{}
 		db.Find(&splints)
 		c.JSON(http.StatusOK, splints)
 	})
-	r.GET("/splint/:id", func(c *gin.Context) {
+	router.GET("/splint/:id", func(c *gin.Context) {
 		splint := Splint{}
 		id := c.Param("id")
 		db.Where("ID = ?", id).Find(&splint)
 		c.JSON(http.StatusOK, splint)
 	})
-	r.DELETE("/splint/:id", func(c *gin.Context) {
+	router.DELETE("/splint/:id", func(c *gin.Context) {
 		splint := Splint{}
 		id := c.Param("id")
 		db.Where("ID = ?", id).Delete(&splint)
 	})
-	r.Run()
+	router.Run()
 }
